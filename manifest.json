@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "Ocultar Elementos",
+  "version": "1.0",
+  "description": "Oculta elementos en la página al hacer clic en ellos.",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}
