@@ -21,6 +21,8 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
     hideModeEnabled = true;
     document.body.classList.add('hide-cursor'); // Añade clase para cambiar el cursor
     document.body.classList.remove('is-not-login'); // Elimina la clase is-not-login
+    document.body.classList.remove('is-not-login');
+    document.body.style.setProperty('overflow', 'auto', 'important');
     console.log('styles ', document.body.classList);
     sendResponse({ status: "Hide mode enabled" }); 
   }
