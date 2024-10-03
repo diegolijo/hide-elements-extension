@@ -1,12 +1,27 @@
-// Agrega un listener para hacer clic en cualquier parte de la página
-document.addEventListener('click', function(event) {
-  // Previene el comportamiento por defecto
-  event.preventDefault();
-  
-  // Detiene la propagación del evento
-  event.stopPropagation();
+let hideModeEnabled = false;
 
-  // Aplica el estilo display: none !important al elemento clickeado
-  const element = event.target;
-  element.style.setProperty('display', 'none', 'important');
-}, true); // Use capturing phase to capture clicks on all elements
+document.addEventListener('click', function (event) {
+  if (hideModeEnabled) {
+    event.preventDefault();
+    event.stopPropagation();
+
+    // Aplica el estilo display: none !important al elemento clickeado
+    const element = event.target;
+    element.style.setProperty('display', 'none', 'important');
+
+    // Deshabilitar el modo de ocultar
+    hideModeEnabled = false;
+    document.body.classList.remove('hide-cursor');
+  }
+}, true);
+
+// Escuchar mensajes del popup
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+  if (request.action === "enableHideMode") {
+    hideModeEnabled = true;
+    document.body.classList.add('hide-cursor'); // Añade clase para cambiar el cursor
+    document.body.classList.remove('is-not-login'); // Elimina la clase is-not-login
+    console.log('styles ', document.body.classList);
+    sendResponse({ status: "Hide mode enabled" }); 
+  }
+});
