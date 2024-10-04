@@ -30,18 +30,18 @@ document.addEventListener('click', function (event) {
 }, true);
 
 chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-  if (request.action === "toggleHideMode") {
+  if (request.action === "toggle-hide-mode") {
     hideModeEnabled = !hideModeEnabled;
     if (hideModeEnabled) {
       document.body.classList.add('hide-cursor'); // Añade clase para cambiar el cursor
       document.body.classList.remove('is-not-login'); // Elimina la clase is-not-login
       document.body.style.setProperty('overflow', 'auto', 'important');
-      chrome.runtime.sendMessage({ action: 'onIcon', value: true }); // enviamos a background cambiar el icono
+      chrome.runtime.sendMessage({ action: 'on-icon', value: true }); // enviamos a background cambiar el icono
       sendResponse({ status: "Hide mode enabled" });
     }
     if (!hideModeEnabled) {
       document.body.classList.remove('hide-cursor');
-      chrome.runtime.sendMessage({ action: 'offIcon', value: true }); // enviamos a background cambiar el icono
+      chrome.runtime.sendMessage({ action: 'off-icon', value: true }); // enviamos a background cambiar el icono
       sendResponse({ status: "Hide mode disabled" });
     }
   }

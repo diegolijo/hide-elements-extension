@@ -20,9 +20,9 @@
   "action": {
     "default_popup": "popup.html",
     "default_icon": {
-      "16": "./icons/off_icon128.png",
-      "48": "./icons/off_icon128.png",
-      "128": "./icons/off_icon128.png"
+      "16": "./icons/icon128.png",
+      "48": "./icons/icon128.png",
+      "128": "./icons/icon128.png"
     }
   }
 }
