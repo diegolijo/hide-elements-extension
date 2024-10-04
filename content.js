@@ -10,20 +10,23 @@ const cursorOptions = [
 
 let currentCursorIndex = 0;
 
-document.addEventListener('click', function (event) {
+document.addEventListener('click', function(event) {
   if (hideModeEnabled) {
     event.preventDefault();
     event.stopPropagation();
     const element = event.target;
     try {
       console.log('element.parentNode ', element.parentNode);
-      // Primer intento: elimina el elemento del DOM
+      // Almacenar el elemento a HTML para enviar
+      const elementHtml = element.outerHTML;
       if (element.parentNode) {
         element.parentNode.removeChild(element);
-      }
+      }      
+      // Enviar mensaje al background script con el HTML del elemento
+      chrome.runtime.sendMessage({ action: "element-removed", html: elementHtml });
     } catch (e) {
       console.error('removeChild:', e);
-      // Si falla,  ocultar el elemento con display: none
+      // Si falla, intenta ocultar el elemento con display: none
       element.style.setProperty('display', 'none', 'important');
     }
   }
