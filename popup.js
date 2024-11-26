@@ -1,3 +1,6 @@
+const displayArea = document.createElement('div');
+document.body.appendChild(displayArea);
+
 setTimeout(() => {
     queryTabs({ active: true, currentWindow: true }).then(tabs => {
         if (tabs.length === 0) {
@@ -6,17 +9,15 @@ setTimeout(() => {
         return sendMessage(tabs[0].id, { action: 'toggle-hide-mode' });
     }).then(response => {
         console.log('queryTabs them: ', response);
-        // window.close();
+        window.close();
     }).catch(error => {
-        // window.close();
+        window.close();
         console.log('queryTabs error: ', error.message);
     });
     fetchLastElement();
 }, 100);
 
 
-const displayArea = document.createElement('div');
-document.body.appendChild(displayArea);
 function fetchLastElement() {
     chrome.runtime.sendMessage({ action: 'get-last-element' }, (response) => {
         if (response?.html) {
@@ -26,7 +27,6 @@ function fetchLastElement() {
         }
     });
 }
-//const intervalId = setInterval(fetchLastElement, 3000);  */// Actualiza cada 3 segundos
 
 function queryTabs(queryInfo) {
     return new Promise((resolve, reject) => {
