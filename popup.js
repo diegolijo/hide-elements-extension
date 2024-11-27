@@ -15,7 +15,7 @@ setTimeout(() => {
         console.log('queryTabs error: ', error.message);
     });
     fetchLastElement();
-}, 100);
+}, 1);
 
 
 function fetchLastElement() {
