@@ -1,41 +1,48 @@
-# Ocultar Elementos - Extensión de Chrome
+# Ocultar Elementos
 
-## Descripción
-
-La extensión "Ocultar Elementos" permite a los usuarios ocultar elementos en una página web al hacer clic sobre ellos. Este modo de ocultar se habilita a través de un botón en el popup de la extensión y es funcional solo para un clic, tras el cual se desactiva automáticamente, volviendo el cursor a su estado predeterminado.
+Extensión de Chrome (Manifest V3) para inspeccionar un elemento de la página, copiarlo, ocultarlo y editar su estilo con botones.
 
 ## Instalación
 
-1. Clona o descarga este repositorio en tu ordenador.
-2. Abre Google Chrome y dirígete a `chrome://extensions/`.
-3. Activa el "Modo de desarrollador" en la esquina superior derecha.
-4. Haz clic en "Cargar sin empaquetar" y selecciona la carpeta donde se encuentra este proyecto.
-5. La extensión debería aparecer ahora en tu lista de extensiones de Chrome.
+1. Abre `chrome://extensions/`.
+2. Activa el modo de desarrollador.
+3. Pulsa "Cargar sin empaquetar" y elige esta carpeta.
 
 ## Uso
 
-1. Haz clic en el icono de la extensión "Ocultar Elementos" en la barra de herramientas de Google Chrome.
-2. Observa que el cursor cambia a una cruz (`crosshair`), indicando que el modo de ocultar está activado.
-3. Haz clic en cualquier elemento de la página que desees ocultar. El elemento será eliminado de la vista aplicándole un estilo `display: none !important`.
-4. El cursor volverá automáticamente a su forma normal después del clic, deshabilitando el modo de ocultar.
-5. Si deseas ocultar otro elemento, repite el proceso iniciando desde el paso 1.
+1. Pulsa el icono de la extensión. El cursor pasa a `not-allowed` y el icono cambia.
+2. Al pasar el ratón, el elemento se pinta de rojo.
+3. Al hacer clic, queda seleccionado en naranja y se abre el panel flotante.
+4. La X cierra el panel y quita el naranja. El modo sigue activo hasta que vuelves a pulsar el icono.
 
-## Archivos Importantes
+### Panel
 
-- `manifest.json`: Archivo de configuración de la extensión.
-- `background.js`: Maneja eventos de fondo de la extensión.
-- `content.js`: Contiene la lógica para ocultar elementos y manejar cambios de cursor.
-- `style.css`: Define estilos personalizados, incluyendo la clase del cursor.
-- `popup.html` y `popup.js`: Definen el popup de la extensión y manejan la activación del modo de ocultar.
+- Arriba: sube al padre.
+- Abajo: baja al primer hijo.
+- Izquierda y derecha: recorren los hermanos.
+- **C**: copia el elemento, sin sus hijos, al portapapeles y al texto de abajo del panel.
+- **B**: borra el elemento. Si no puede quitarlo del DOM, lo oculta con `display: none`.
+- **E**: abre o cierra el editor.
+- Imprimir: escribe el DOM de la página en la consola y lo copia al portapapeles. El panel no entra en esa copia.
 
-## Iconos
+El panel se arrastra desde la cabecera.
 
-Incluye iconos en diversos tamaños en el directorio `icons/` (16x16, 48x48, 128x128) que puedes personalizar según tus necesidades. *TODO
+### Editor
 
-## Contribuciones
+Pestañas de botones, sin campos de texto: Estilos, Caja, Posición, Espacio, Display y Color.
 
-Si tienes ideas para mejorar esta extensión o encuentras problemas, por favor crea un issue o envía un pull request.
+Estilos muestra el estilo calculado del elemento, venga de una clase o de un estilo en línea, y debajo el árbol de su DOM. En Posición, `absolute`, `fixed` y `sticky` usan deslizadores para top, right, bottom y left. Espacio reúne los de margen y relleno: cerca de cero el recorrido es más fino. En Display, la opción activa sale en naranja: si el elemento es `flex` o `inline-flex`, esa pestaña se abre sola con dirección, wrap, justify, align y gap ya marcados. En Color hay selector y cuentagotas.
+
+Los cambios se escriben como estilo en línea del elemento.
+
+## Volcado
+
+Pega el texto del botón imprimir en un archivo dentro de `dumps/`. Esos HTML no se versionan.
+
+## Vista local
+
+Abre `dev/preview.html` en el navegador para probar el panel sin cargar la extensión. El icono de la extensión y el cuentagotas hay que probarlos en Chrome.
 
 ## Licencia
 
-Este proyecto está bajo la Licencia MIT. Puedes hacer lo que quieras con él, solo recuerda dar crédito al autor original.
+MIT. Copyright (c) 2024-2026 Diego Santiago. Ver [LICENSE](LICENSE).
