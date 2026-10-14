@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
-  "name": "Clic DOM",
-  "version": "1.3",
+  "name": "Dominator",
+  "version": "2.0",
   "description": "Selecciona elementos de la página, los oculta y edita su estilo.",
   "permissions": [
     "activeTab",
