@@ -294,6 +294,49 @@
     return button;
   }
 
+  function countBadge(count, title) {
+    if (count <= 0) {
+      return null;
+    }
+    const badge = document.createElement('span');
+    badge.className = 'tree-badge';
+    badge.textContent = String(count);
+    badge.title = title;
+    return badge;
+  }
+
+  function siblingBadge(count) {
+    if (count <= 1) {
+      return null;
+    }
+    return countBadge(count, count + ' siblings');
+  }
+
+  function siblingTotal(element) {
+    if (!element.parentElement) {
+      return 1;
+    }
+    return childElements(element.parentElement).length;
+  }
+
+  function treeLine(element, depth, mode) {
+    const branch = document.createElement('div');
+    branch.className = 'tree-branch';
+    branch.style.paddingLeft = (depth * 10) + 'px';
+    const row = document.createElement('div');
+    row.className = 'tree-line';
+    row.append(treeButton(element));
+    const kids = childElements(element);
+    const badge = mode === 'child'
+      ? countBadge(kids.length, kids.length + ' children')
+      : siblingBadge(siblingTotal(element));
+    if (badge) {
+      row.append(badge);
+    }
+    branch.append(row);
+    return branch;
+  }
+
   function domTree() {
     const wrap = document.createElement('div');
     wrap.className = 'tree-wrap';
@@ -312,19 +355,10 @@
     }
     chain.reverse();
     chain.forEach((current, depth) => {
-      const line = document.createElement('div');
-      line.className = 'tree-line';
-      line.style.setProperty('--depth', String(depth));
-      line.append(treeButton(current));
-      const siblings = current.parentElement ? childElements(current.parentElement) : [current];
-      if (siblings.length > 1) {
-        const badge = document.createElement('span');
-        badge.className = 'sib';
-        badge.textContent = String(siblings.length);
-        badge.title = siblings.length + ' siblings';
-        line.append(badge);
-      }
-      wrap.append(line);
+      wrap.append(treeLine(current, depth, 'path'));
+    });
+    childElements(selected).forEach((kid) => {
+      wrap.append(treeLine(kid, chain.length, 'child'));
     });
     return wrap;
   }

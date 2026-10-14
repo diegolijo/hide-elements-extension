@@ -96,14 +96,24 @@
     .tree-host { min-width: 0; }
     .tree-host.is-panning, .tree-host.is-panning * { cursor: move !important; }
     .tree-wrap { max-height: 22vh; min-width: 0; overflow: auto; overflow-anchor: none; padding: 8px; border-top: 1px solid #333; }
-    .tree-line {
+    .tree-branch {
       display: flex;
-      align-items: center;
-      gap: 4px;
-      margin: 2px 0;
-      padding-left: calc(var(--depth) * 12px);
+      flex-direction: column;
+      align-items: flex-start;
+      flex: 0 0 auto;
+      gap: 2px;
     }
-    .tree-line > button {
+    .tree-row {
+      display: flex;
+      flex-wrap: nowrap;
+      align-items: flex-start;
+      gap: 4px;
+      width: max-content;
+      min-width: max-content;
+      margin: 0;
+      padding-left: 10px;
+    }
+    .tree-branch > button {
       flex: 0 0 auto;
       width: auto;
       margin: 0;
@@ -111,8 +121,9 @@
       justify-content: flex-start;
       white-space: nowrap;
     }
-    .tree-line > button.is-path { border-color: #8fd0ef; }
-    .sib {
+    .tree-branch > button.is-path { border-color: #8fd0ef; }
+    .tree-line { display: flex; align-items: center; gap: 4px; }
+    .tree-badge {
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -121,9 +132,9 @@
       padding: 0 4px;
       border-radius: 8px;
       background: #2c6288;
-      color: #fff;
+      color: #d7ebf7;
       font-size: 10px;
-      line-height: 1;
+      line-height: 16px;
     }
     textarea {
       margin: 0 8px 8px;
