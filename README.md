@@ -1,4 +1,4 @@
-# Ocultar Elementos
+# Clic DOM
 
 Extensión de Chrome (Manifest V3) para inspeccionar un elemento de la página, copiarlo, ocultarlo y editar su estilo con botones.
 
@@ -10,28 +10,30 @@ Extensión de Chrome (Manifest V3) para inspeccionar un elemento de la página, 
 
 ## Uso
 
-1. Pulsa el icono de la extensión. El cursor pasa a `not-allowed` y el icono cambia.
-2. Al pasar el ratón, el elemento se pinta de rojo.
-3. Al hacer clic, queda seleccionado en naranja y se abre el panel flotante.
-4. La X cierra el panel y quita el naranja. El modo sigue activo hasta que vuelves a pulsar el icono.
+1. Pulsa el icono de la extensión. El cursor pasa a cruz de selección y el icono pasa al verde. Al volver a pulsarlo, vuelve el icono amarillo.
+2. Al pasar el ratón, el elemento se pinta de naranja suave.
+3. Al hacer clic, queda seleccionado en verde y se abre el panel flotante.
+4. La X cierra el panel y quita el verde. El modo sigue activo hasta que vuelves a pulsar el icono o cambias de pestaña. Al cambiar de pestaña el panel se cierra y el icono vuelve al amarillo.
 
 ### Panel
 
-- Arriba: sube al padre.
-- Abajo: baja al primer hijo.
+- El puntero del encabezado activa el clic en la página: el cursor vuelve al normal y el ratón deja de pintar. Otro clic en ese botón recupera la cruz y el resalte.
+- Arriba: sube al padre. Abajo vuelve por el mismo camino; si no hay camino, baja al primer hijo.
+- El árbol muestra los padres y, en cada nivel, los hermanos en la misma línea. El seleccionado queda arriba del recuadro.
 - Izquierda y derecha: recorren los hermanos.
-- **C**: copia el elemento, sin sus hijos, al portapapeles y al texto de abajo del panel.
-- **B**: borra el elemento. Si no puede quitarlo del DOM, lo oculta con `display: none`.
-- **E**: abre o cierra el editor.
+- `«` y `»`: mueven el elemento entre sus hermanos.
+- Copiar: el elemento, sin sus hijos, al portapapeles.
+- Tijeras: copia el elemento completo, con sus hijos, y lo borra.
+- Pegar: inserta el HTML del portapapeles justo después del elemento seleccionado.
 - Imprimir: escribe el DOM de la página en la consola y lo copia al portapapeles. El panel no entra en esa copia.
 
 El panel se arrastra desde la cabecera.
 
 ### Editor
 
-Pestañas de botones, sin campos de texto: Estilos, Caja, Posición, Espacio, Display y Color.
+El árbol del elemento queda siempre bajo las flechas. Las pestañas, en inglés y en azul, son Styles, Box, Position, Space, Display, Border y Color. La opción activa de cada pestaña sigue en naranja.
 
-Estilos muestra el estilo calculado del elemento, venga de una clase o de un estilo en línea, y debajo el árbol de su DOM. En Posición, `absolute`, `fixed` y `sticky` usan deslizadores para top, right, bottom y left. Espacio reúne los de margen y relleno: cerca de cero el recorrido es más fino. En Display, la opción activa sale en naranja: si el elemento es `flex` o `inline-flex`, esa pestaña se abre sola con dirección, wrap, justify, align y gap ya marcados. En Color hay selector y cuentagotas.
+Styles muestra el estilo calculado y se puede tachar. Position, Space y Border usan deslizadores con el nombre CSS (`top`, `margin-top`, `border-radius`…). Si el elemento es `flex` o `inline-flex`, Display se abre sola. Color tiene selector y cuentagotas.
 
 Los cambios se escriben como estilo en línea del elemento.
 

@@ -1,23 +1,25 @@
-const RED = '#FF0000AA';
-const ORANGE = '#FF8C00AA';
+const HOVER = '#FF8C0040';
+const SELECTED = '#22C55EAA';
 const HOST_ID = 'dn-panel-host';
 
 const state = {
   enabled: false,
+  pageClicks: false,
   selected: null,
   hovered: null,
-  editorOpen: true,
-  editorTab: 'Estilos'
+  editorTab: 'Styles',
+  scrollTree: false
 };
 
 const dn = {
   HOST_ID,
-  RED,
-  ORANGE,
+  HOVER,
+  SELECTED,
   state,
   ui: {},
   setEnabled,
   toggleEnabled,
+  setPageClicks,
   select,
   clearSelection,
   paint,
@@ -27,6 +29,13 @@ const dn = {
   parentOf,
   firstChildEl,
   sibling,
+  ascend,
+  descend,
+  canDescend,
+  moveAmong,
+  canMove,
+  cutSelected,
+  pasteClipboard,
   removeSelected,
   canRemove,
   dumpDom,
@@ -37,6 +46,9 @@ const dn = {
 globalThis.__dn = dn;
 
 function notifyIcon(on) {
+  if (document.visibilityState === 'hidden') {
+    return;
+  }
   const runtime = globalThis.chrome && chrome.runtime;
   if (!runtime || typeof runtime.sendMessage !== 'function') {
     return;
@@ -48,16 +60,36 @@ function notifyIcon(on) {
   }
 }
 
-function setEnabled(on) {
-  state.enabled = !!on;
+function syncCursor() {
   if (document.body) {
-    document.body.classList.toggle('hide-cursor', state.enabled);
+    document.body.classList.toggle('hide-cursor', state.enabled && !state.pageClicks);
   }
+}
+
+function setPageClicks(on) {
+  state.pageClicks = !!on;
+  syncCursor();
+  if (state.pageClicks) {
+    clearHover();
+  }
+  if (typeof dn.ui.refresh === 'function' && state.selected) {
+    dn.ui.refresh();
+  }
+}
+
+function setEnabled(on, options) {
+  state.enabled = !!on;
+  if (!state.enabled) {
+    state.pageClicks = false;
+  }
+  syncCursor();
   if (state.enabled) {
     notifyIcon(true);
     return;
   }
-  notifyIcon(false);
+  if (!options || !options.silent) {
+    notifyIcon(false);
+  }
   clearHover();
   clearSelection();
   if (typeof dn.ui.dismiss === 'function') {
@@ -201,21 +233,26 @@ function clearSelection() {
     return;
   }
   if (element === state.hovered && state.enabled) {
-    paint(element, RED);
+    paint(element, HOVER);
     return;
   }
   restore(element);
 }
 
-function select(element) {
+const trace = [];
+
+function select(element, options) {
   if (!(element instanceof Element) || element.id === HOST_ID) {
     return;
+  }
+  if (!options || !options.trace) {
+    trace.length = 0;
   }
   if (state.selected && state.selected !== element) {
     const previous = state.selected;
     state.selected = null;
     if (previous === state.hovered && state.enabled) {
-      paint(previous, RED);
+      paint(previous, HOVER);
     } else {
       restore(previous);
     }
@@ -225,7 +262,7 @@ function select(element) {
   if (display === 'flex' || display === 'inline-flex') {
     state.editorTab = 'Display';
   }
-  paint(element, ORANGE);
+  paint(element, SELECTED);
   if (typeof dn.ui.refresh === 'function') {
     dn.ui.refresh();
   }
@@ -245,6 +282,15 @@ function shallowHtml(element) {
   if (element === document.body) {
     clone.classList.remove('hide-cursor');
   }
+  return clone.outerHTML;
+}
+
+function elementHtml(element) {
+  const clone = element.cloneNode(true);
+  clone.querySelector('#' + HOST_ID)?.remove();
+  [clone, ...clone.querySelectorAll('*')].forEach((node) => {
+    cleanPaint(node);
+  });
   return clone.outerHTML;
 }
 
@@ -270,6 +316,93 @@ function elementSiblings(element) {
   return [...element.parentElement.children].filter((child) => child.id !== HOST_ID);
 }
 
+function ascend(element) {
+  const parent = parentOf(element);
+  if (!parent) {
+    return;
+  }
+  trace.push(element);
+  select(parent, { trace: true });
+}
+
+function descend(element) {
+  const tip = trace[trace.length - 1];
+  if (tip && tip.isConnected && tip.parentElement === element) {
+    trace.pop();
+    select(tip, { trace: true });
+    return;
+  }
+  trace.length = 0;
+  const child = firstChildEl(element);
+  if (child) {
+    select(child, { trace: true });
+  }
+}
+
+function canDescend(element) {
+  const tip = trace[trace.length - 1];
+  if (tip && tip.isConnected && tip.parentElement === element) {
+    return true;
+  }
+  return Boolean(firstChildEl(element));
+}
+
+function canMove(element, direction) {
+  return Boolean(element && nextRealSibling(element, direction));
+}
+
+function moveAmong(element, direction) {
+  if (!canMove(element, direction) || !element.parentNode) {
+    return false;
+  }
+  if (direction < 0) {
+    element.parentNode.insertBefore(element, nextRealSibling(element, -1));
+    return true;
+  }
+  const next = nextRealSibling(element, 1);
+  element.parentNode.insertBefore(element, next.nextSibling);
+  return true;
+}
+
+function cutSelected() {
+  const element = state.selected;
+  if (!canRemove(element)) {
+    return;
+  }
+  const html = elementHtml(element);
+  state.shallow = html;
+  state.clip = html;
+  copyText(html);
+  removeSelected();
+}
+
+function insertClipboard(text) {
+  const target = state.selected;
+  const html = String(text || '').trim();
+  if (!target || !target.parentNode || !html) {
+    return;
+  }
+  const template = document.createElement('template');
+  template.innerHTML = html;
+  const node = template.content.firstElementChild;
+  if (!node) {
+    return;
+  }
+  target.insertAdjacentElement('afterend', node);
+  select(node);
+}
+
+function pasteClipboard() {
+  const clipboard = navigator.clipboard;
+  if (clipboard && typeof clipboard.readText === 'function') {
+    clipboard.readText().then(insertClipboard).catch(() => {
+      insertClipboard(state.clip || state.shallow);
+    });
+    return;
+  }
+  insertClipboard(state.clip || state.shallow);
+}
+
 function sibling(element, direction) {
   const list = elementSiblings(element);
   const index = list.indexOf(element);
@@ -293,7 +426,10 @@ function removeSelected() {
     return;
   }
   const parent = element.parentElement;
-  const fallback = nextRealSibling(element, 1) || nextRealSibling(element, -1) || parent;
+  const list = elementSiblings(element);
+  const index = list.indexOf(element);
+  const rest = list.filter((node) => node !== element);
+  const fallback = (index >= 0 && rest[index]) || rest[0] || parent;
   restore(element);
   state.selected = null;
   if (state.hovered === element) {
@@ -358,7 +494,7 @@ function dumpDom() {
 }
 
 function onMouseOver(event) {
-  if (!state.enabled || fromPanel(event)) {
+  if (!state.enabled || state.pageClicks || fromPanel(event)) {
     return;
   }
   const element = event.target;
@@ -367,17 +503,17 @@ function onMouseOver(event) {
   }
   if (state.hovered && state.hovered !== element) {
     if (state.hovered === state.selected) {
-      paint(state.hovered, ORANGE);
+      paint(state.hovered, SELECTED);
     } else {
       restore(state.hovered);
     }
   }
   state.hovered = element;
-  paint(element, element === state.selected ? ORANGE : RED);
+  paint(element, element === state.selected ? SELECTED : HOVER);
 }
 
 function onMouseOut(event) {
-  if (!state.enabled || fromPanel(event)) {
+  if (!state.enabled || state.pageClicks || fromPanel(event)) {
     return;
   }
   const element = event.target;
@@ -386,14 +522,14 @@ function onMouseOut(event) {
   }
   state.hovered = null;
   if (element === state.selected) {
-    paint(element, ORANGE);
+    paint(element, SELECTED);
     return;
   }
   restore(element);
 }
 
 function onClick(event) {
-  if (!state.enabled || fromPanel(event)) {
+  if (!state.enabled || state.pageClicks || fromPanel(event)) {
     return;
   }
   event.preventDefault();
@@ -417,6 +553,18 @@ if (globalThis.chrome && chrome.runtime && chrome.runtime.onMessage) {
     if (request.action === 'toggle-hide-mode') {
       toggleEnabled();
       sendResponse({ status: state.enabled ? 'Hide mode enabled' : 'Hide mode disabled' });
+      return;
+    }
+    if (request.action === 'deactivate-hide-mode') {
+      if (state.enabled) {
+        setEnabled(false, { silent: true });
+      }
+      sendResponse({ enabled: false });
+      return;
+    }
+    if (request.action === 'sync-icon') {
+      notifyIcon(state.enabled);
+      sendResponse({ enabled: state.enabled });
     }
   });
 }
